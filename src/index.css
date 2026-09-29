@@ -1,0 +1,210 @@
+@import "tailwindcss";
+
+:root {
+  --honk-accent: #9333ea;
+  --honk-accent-hover: #7e22ce;
+  --honk-accent-foreground: #ffffff;
+  --honk-accent-subtle: rgba(147, 51, 234, 0.15);
+  --honk-accent-border: rgba(147, 51, 234, 0.35);
+  --honk-accent-ring: rgba(147, 51, 234, 0.45);
+  --honk-accent-text: #c084fc;
+  --honk-accent-gradient-from: #9333ea;
+  --honk-accent-gradient-to: #6b21a8;
+
+  --bg-page: #09090b;
+  --bg-sidebar: #09090b;
+  --bg-surface: #18181b;
+  --bg-surface-hover: #27272a;
+  --bg-input: #18181b;
+  --border-app: #27272a;
+  --border-strong: #3f3f46;
+  --text-main: #fafafa;
+  --text-muted: #a1a1aa;
+  --text-faint: #71717a;
+}
+
+html.light {
+  --bg-page: #f8fafc;
+  --bg-sidebar: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #f1f5f9;
+  --bg-input: #ffffff;
+  --border-app: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-faint: #94a3b8;
+}
+
+html.dark {
+  --bg-page: #09090b;
+  --bg-sidebar: #09090b;
+  --bg-surface: #18181b;
+  --bg-surface-hover: #27272a;
+  --bg-input: #18181b;
+  --border-app: #27272a;
+  --border-strong: #3f3f46;
+  --text-main: #fafafa;
+  --text-muted: #a1a1aa;
+  --text-faint: #71717a;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(120, 120, 130, 0.4) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(120, 120, 130, 0.4);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(120, 120, 130, 0.7);
+  }
+}
+
+/* Dynamic Accent Utilities */
+.honk-accent-btn {
+  background-color: var(--honk-accent) !important;
+  color: var(--honk-accent-foreground) !important;
+}
+
+.honk-accent-btn:hover {
+  background-color: var(--honk-accent-hover) !important;
+}
+
+.honk-accent-text {
+  color: var(--honk-accent) !important;
+}
+
+.honk-accent-text-tint {
+  color: var(--honk-accent-text) !important;
+}
+
+.honk-accent-border {
+  border-color: var(--honk-accent-border) !important;
+}
+
+.honk-accent-subtle {
+  background-color: var(--honk-accent-subtle) !important;
+}
+
+.honk-accent-focus:focus-within,
+.honk-accent-focus:focus {
+  border-color: var(--honk-accent) !important;
+  box-shadow: 0 0 0 2px var(--honk-accent-ring) !important;
+}
+
+.honk-accent-slider {
+  accent-color: var(--honk-accent) !important;
+}
+
+/* =========================================================
+   Honk Human-like Handwriting & Progressive Reveal Animation
+   ========================================================= */
+
+@keyframes honkWritingReveal {
+  0% {
+    opacity: 0.15;
+    transform: translateY(2.5px) skewX(-0.5deg);
+    filter: blur(0.4px);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translateY(-0.3px) skewX(0.2deg);
+    filter: blur(0.1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) skewX(0deg);
+    filter: blur(0);
+  }
+}
+
+@keyframes honkPenBobbing {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(-14deg);
+  }
+  20% {
+    transform: translate(1px, -2px) rotate(-8deg);
+  }
+  45% {
+    transform: translate(2px, 0.5px) rotate(-16deg);
+  }
+  70% {
+    transform: translate(-0.5px, -1.5px) rotate(-9deg);
+  }
+  85% {
+    transform: translate(0.5px, 0.5px) rotate(-13deg);
+  }
+}
+
+@keyframes honkInkGlow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.35);
+  }
+}
+
+.honk-pen-wrapper {
+  vertical-align: baseline;
+  line-height: 1;
+  display: inline-flex;
+}
+
+.honk-pen-icon {
+  animation: honkPenBobbing 0.65s ease-in-out infinite;
+  transform-origin: 2px 14px;
+  will-change: transform;
+}
+
+.honk-ink-dot {
+  animation: honkInkGlow 1s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.honk-writing-stream p:last-child,
+.honk-writing-stream li:last-child,
+.honk-writing-stream h1:last-child,
+.honk-writing-stream h2:last-child,
+.honk-writing-stream h3:last-child {
+  animation: honkWritingReveal 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .honk-pen-icon {
+    animation: none !important;
+  }
+  .honk-ink-dot {
+    animation: none !important;
+  }
+  .honk-writing-stream p:last-child,
+  .honk-writing-stream li:last-child,
+  .honk-writing-stream h1:last-child,
+  .honk-writing-stream h2:last-child,
+  .honk-writing-stream h3:last-child {
+    animation: none !important;
+  }
+}
+

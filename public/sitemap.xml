@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://honk-ai-harshil.ai.studio/</loc>
+    <lastmod>2026-09-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://honk-ai-harshil.ai.studio/honk_logo.jpg</image:loc>
+      <image:title>Honk AI Official Logo</image:title>
+      <image:caption>Official logo for Honk AI by Zyron</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://honk-ai-harshil.ai.studio/about</loc>
+    <lastmod>2026-09-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://honk-ai-harshil.ai.studio/honk_logo.jpg</image:loc>
+      <image:title>Honk AI Official Logo</image:title>
+      <image:caption>Official logo for Honk AI by Zyron</image:caption>
+    </image:image>
+  </url>
+</urlset>
+

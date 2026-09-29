@@ -1,0 +1,277 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "HONK AI Master Platform API",
+    "version": "2.0.0",
+    "description": "Official API documentation for HONK AI, the multimodal platform created by Zyron for conversation, vision, images, video, document intelligence, Indian languages, and full-stack app building.",
+    "contact": {
+      "name": "HONK AI Official",
+      "url": "https://honk-ai-harshil.ai.studio/about"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://honk-ai-harshil.ai.studio",
+      "description": "Production Server"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local Development Server"
+    }
+  ],
+  "security": [
+    {
+      "HonkKeyAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "HonkKeyAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "HONK_KEY",
+        "description": "Provide your HONK_KEY in the Authorization header as: `Authorization: Bearer <HONK_KEY>` or via the `x-honk-key` header."
+      }
+    },
+    "schemas": {
+      "Model": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "HONK" },
+          "name": { "type": "string", "example": "HONK" },
+          "description": { "type": "string" },
+          "contextWindow": { "type": "integer", "example": 1048576 },
+          "capabilities": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "ChatMessage": {
+        "type": "object",
+        "required": ["role", "content"],
+        "properties": {
+          "role": { "type": "string", "enum": ["user", "assistant", "system"] },
+          "content": { "type": "string" },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "type": { "type": "string" },
+                "dataUrl": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/v1/models": {
+      "get": {
+        "summary": "List available HONK models",
+        "description": "Returns the list of public HONK models: HONK, HONK 1.5, and HONK 2.0.",
+        "responses": {
+          "200": { "description": "Successful list of models" }
+        }
+      }
+    },
+    "/v1/capabilities": {
+      "get": {
+        "summary": "List platform capabilities & Indian languages",
+        "description": "Returns supported capabilities (CHAT, VISION, IMAGE, VIDEO, APP_BUILDER, DOCUMENT, AUDIO, TRANSLATION, CODE, PROMPT_ENHANCEMENT) and 22 Indian languages.",
+        "responses": {
+          "200": { "description": "Supported capabilities" }
+        }
+      }
+    },
+    "/v1/chat": {
+      "post": {
+        "summary": "Send a chat or reasoning request",
+        "description": "Supports multi-turn messages, Server-Sent Events (SSE) streaming, file attachments, and automatic Hinglish / Indian language detection.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["messages"],
+                "properties": {
+                  "messages": { "type": "array", "items": { "$ref": "#/components/schemas/ChatMessage" } },
+                  "model": { "type": "string", "enum": ["HONK", "HONK 1.5", "HONK 2.0"], "default": "HONK" },
+                  "stream": { "type": "boolean", "default": true },
+                  "temperature": { "type": "number", "default": 0.7 },
+                  "systemPrompt": { "type": "string" },
+                  "enableWebSearch": { "type": "boolean", "default": false }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Stream or JSON completion" },
+          "429": { "description": "Rate limit reached" }
+        }
+      }
+    },
+    "/v1/image": {
+      "post": {
+        "summary": "Generate or edit images",
+        "description": "Text-to-image or image-to-image editing using the ImageProvider abstraction.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt"],
+                "properties": {
+                  "prompt": { "type": "string" },
+                  "aspectRatio": { "type": "string", "enum": ["1:1", "16:9", "9:16", "4:3", "3:4"], "default": "1:1" },
+                  "mode": { "type": "string", "enum": ["generate", "edit"], "default": "generate" },
+                  "inputImage": { "type": "string", "description": "Base64 data URI for image editing" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Generated image object" }
+        }
+      }
+    },
+    "/v1/video": {
+      "post": {
+        "summary": "Create asynchronous video generation job",
+        "description": "Creates a non-blocking background video generation job. Poll `/v1/video/{id}` for status updates.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt"],
+                "properties": {
+                  "prompt": { "type": "string" },
+                  "aspectRatio": { "type": "string", "default": "16:9" },
+                  "durationSeconds": { "type": "integer", "default": 5 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": { "description": "Video job created" }
+        }
+      }
+    },
+    "/v1/video/{id}": {
+      "get": {
+        "summary": "Get video generation status",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Job status, progress, and result URL" }
+        }
+      }
+    },
+    "/v1/app-builder/generate": {
+      "post": {
+        "summary": "Generate complete application project files",
+        "description": "Translates a simple specification into a full-stack multi-file software architecture with sandboxed file exports.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt"],
+                "properties": {
+                  "prompt": { "type": "string", "example": "Build an expense tracker with login and charts." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Application job generated" }
+        }
+      }
+    },
+    "/v1/vision": {
+      "post": {
+        "summary": "Analyze visual media and screenshots",
+        "description": "Supports OCR, diagrams, UI screenshot analysis, and visual reasoning.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["image"],
+                "properties": {
+                  "image": { "type": "string", "description": "Base64 data URI" },
+                  "prompt": { "type": "string" },
+                  "mode": { "type": "string", "enum": ["general", "ocr", "diagram", "screenshot", "reasoning"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Visual analysis results" }
+        }
+      }
+    },
+    "/v1/translate": {
+      "post": {
+        "summary": "Translate between 22 Indian languages and English",
+        "description": "Preserves code blocks, markdown formatting, numbers, and names while capturing natural colloquial nuance.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["text", "targetLanguage"],
+                "properties": {
+                  "text": { "type": "string" },
+                  "sourceLanguage": { "type": "string", "default": "auto" },
+                  "targetLanguage": { "type": "string", "example": "Hindi" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Translated text payload" }
+        }
+      }
+    },
+    "/v1/enhance-prompt": {
+      "post": {
+        "summary": "Enhance and structure user prompts",
+        "description": "Expands concise instructions into structured, production-ready prompts without modifying intended meaning.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt"],
+                "properties": {
+                  "prompt": { "type": "string" },
+                  "domain": { "type": "string", "enum": ["coding", "creative", "technical", "general", "business"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Enhanced prompt with structured headings" }
+        }
+      }
+    }
+  }
+}

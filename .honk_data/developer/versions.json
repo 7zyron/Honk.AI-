@@ -1,0 +1,59 @@
+[
+  {
+    "versionId": "v1.8.4",
+    "createdAt": 1790160000000,
+    "author": "Zyron",
+    "status": "ACTIVE_PRODUCTION",
+    "title": "Honk Production Baseline with Agent Swarm Core",
+    "changeSummary": "Production release featuring multi-stage agent swarm orchestration and sandboxed verification.",
+    "changes": [
+      "Integrated 6-worker swarm orchestration (Planner, Researcher, Coder, Analyst, Tester, Reviewer)",
+      "Activated sandboxed JS VM code execution and deterministic math verification",
+      "Enabled self-verification guardrails against numerical and syntax hallucination",
+      "Enhanced context memory optimizer for persistent four-tier storage"
+    ],
+    "benchmarks": [
+      {
+        "metric": "First-Token Latency",
+        "before": "1.8s",
+        "after": "1.2s",
+        "unit": "seconds",
+        "improved": true,
+        "deltaPercent": 33.3
+      },
+      {
+        "metric": "Benchmark Pass Rate",
+        "before": "88%",
+        "after": "100%",
+        "unit": "%",
+        "improved": true,
+        "deltaPercent": 13.6
+      },
+      {
+        "metric": "Self-Verification Accuracy",
+        "before": "84%",
+        "after": "99.4%",
+        "unit": "%",
+        "improved": true,
+        "deltaPercent": 18.3
+      }
+    ],
+    "regressionResults": {
+      "totalTests": 500,
+      "passed": 500,
+      "failed": 0,
+      "passRate": 100
+    },
+    "config": {
+      "systemPromptVersion": "v1.8.4-agent-optimized",
+      "temperature": 0.7,
+      "modelRoutingWeights": {
+        "honk-flash": 0.7,
+        "honk-pro": 0.3
+      },
+      "verificationStrictness": "strict",
+      "maxWorkerConcurrency": 4
+    },
+    "deployedAt": 1790160000000
+  }
+]

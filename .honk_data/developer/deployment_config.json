@@ -1,0 +1,9 @@
+{
+  "approvalMode": "REVIEW",
+  "activeVersionId": "v1.8.4",
+  "lastUpdated": 1790165992353,
+  "autoDeployThreshold": {
+    "minPassRate": 100,
+    "maxLatencyRegressionMs": 50
+  }
+}

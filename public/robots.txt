@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /share/
+Disallow: /api/shares/
+
+Sitemap: https://honk-ai-harshil.ai.studio/sitemap.xml

@@ -1,0 +1,24 @@
+[
+  {
+    "id": "weak_latency_swarm_plan",
+    "category": "latency",
+    "severity": "low",
+    "title": "Initial Plan Generation Overhead in Heavy Mode",
+    "description": "Analyzing complex agent objectives currently spends ~400ms in schema formulation before dispatching workers.",
+    "detectedAt": 1790079592780,
+    "occurrenceCount": 14,
+    "samplePattern": "Heavy task requests exceeding 5 subtasks",
+    "suggestedAction": "Enable speculative worker dispatch alongside AST parsing in orchestrator."
+  },
+  {
+    "id": "weak_arithmetic_precision",
+    "category": "accuracy",
+    "severity": "medium",
+    "title": "Compound Percentage Formula Precision",
+    "description": "Multi-year compound growth equations occasionally hit floating-point rounding quirks without sandboxed evaluation.",
+    "detectedAt": 1789993192780,
+    "occurrenceCount": 8,
+    "samplePattern": "Complex interest & probability matrices",
+    "suggestedAction": "Enforce code_interpreter tool execution as required dependency in math subtasks."
+  }
+]

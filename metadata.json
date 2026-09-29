@@ -1,0 +1,6 @@
+{
+  "name": "Honk AI",
+  "description": "Honk AI is an AI assistant created by Zyron for chatting, multimodal photo vision (Photo Kheecho), creativity, coding, images, and everyday help.",
+  "requestFramePermissions": ["microphone", "camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

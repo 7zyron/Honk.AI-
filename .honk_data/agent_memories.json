@@ -1,0 +1,18 @@
+{
+  "memories": {
+    "test_user": [
+      {
+        "layer": "long_term",
+        "type": "preference",
+        "key": "coding_style",
+        "value": "Prefers TypeScript with strict types",
+        "confidence": 1,
+        "id": "mem_1790165017052_sf5d1",
+        "userId": "test_user",
+        "createdAt": 1790165017052,
+        "updatedAt": 1790165017052
+      }
+    ]
+  },
+  "preferences": {}
+}
