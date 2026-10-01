@@ -9,6 +9,7 @@ import {
   AnonymousFeedback,
   ApprovalMode,
 } from '../types/developer';
+import { buildApiUrl } from '../config/api';
 
 const DEV_TOKEN_KEY = 'honk_dev_auth_token_v1';
 
@@ -50,21 +51,18 @@ function getAuthHeaders(): HeadersInit {
 
 export async function loginDeveloper(email: string, secretKey?: string): Promise<{ success: boolean; session?: DeveloperSession; error?: string }> {
   try {
-    const res = await fetch('/api/developer/auth/login', {
+    const res = await fetch(buildApiUrl('/api/developer/auth/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, secretKey }),
     });
-
     const data = await res.json();
     if (!res.ok) {
       return { success: false, error: data.error || 'Authentication rejected' };
     }
-
     if (data.token) {
       setStoredDevToken(data.token);
     }
-
     return { success: true, session: data.session };
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to authenticate developer' };
@@ -74,9 +72,8 @@ export async function loginDeveloper(email: string, secretKey?: string): Promise
 export async function verifyDeveloperSession(): Promise<DeveloperSession | null> {
   const token = getStoredDevToken();
   if (!token) return null;
-
   try {
-    const res = await fetch('/api/developer/auth/verify', {
+    const res = await fetch(buildApiUrl('/api/developer/auth/verify'), {
       headers: getAuthHeaders(),
     });
     if (!res.ok) {
@@ -91,19 +88,19 @@ export async function verifyDeveloperSession(): Promise<DeveloperSession | null>
 }
 
 export async function fetchSystemTelemetry(): Promise<SystemHealthTelemetry> {
-  const res = await fetch('/api/developer/telemetry', { headers: getAuthHeaders() });
+  const res = await fetch(buildApiUrl('/api/developer/telemetry'), { headers: getAuthHeaders() });
   if (!res.ok) throw new Error('Failed to fetch telemetry');
   return res.json();
 }
 
 export async function fetchSystemVersions(): Promise<SystemVersion[]> {
-  const res = await fetch('/api/developer/versions', { headers: getAuthHeaders() });
+  const res = await fetch(buildApiUrl('/api/developer/versions'), { headers: getAuthHeaders() });
   if (!res.ok) throw new Error('Failed to fetch system versions');
   return res.json();
 }
 
 export async function deployVersion(versionId: string): Promise<{ success: boolean; message: string; version?: SystemVersion }> {
-  const res = await fetch('/api/developer/versions/deploy', {
+  const res = await fetch(buildApiUrl('/api/developer/versions/deploy'), {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify({ versionId }),
@@ -114,7 +111,7 @@ export async function deployVersion(versionId: string): Promise<{ success: boole
 }
 
 export async function rollbackVersion(targetVersionId?: string): Promise<{ success: boolean; message: string; rolledBackTo?: SystemVersion }> {
-  const res = await fetch('/api/developer/versions/rollback', {
+  const res = await fetch(buildApiUrl('/api/developer/versions/rollback'), {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify({ targetVersionId }),
@@ -125,13 +122,13 @@ export async function rollbackVersion(targetVersionId?: string): Promise<{ succe
 }
 
 export async function fetchDeploymentConfig(): Promise<DeploymentConfig> {
-  const res = await fetch('/api/developer/config', { headers: getAuthHeaders() });
+  const res = await fetch(buildApiUrl('/api/developer/config'), { headers: getAuthHeaders() });
   if (!res.ok) throw new Error('Failed to fetch config');
   return res.json();
 }
 
 export async function updateApprovalMode(approvalMode: ApprovalMode): Promise<DeploymentConfig> {
-  const res = await fetch('/api/developer/config', {
+  const res = await fetch(buildApiUrl('/api/developer/config'), {
     method: 'PUT',
     headers: getAuthHeaders(),
     body: JSON.stringify({ approvalMode }),
@@ -141,13 +138,13 @@ export async function updateApprovalMode(approvalMode: ApprovalMode): Promise<De
 }
 
 export async function fetchWeaknesses(): Promise<SystemWeakness[]> {
-  const res = await fetch('/api/developer/weaknesses', { headers: getAuthHeaders() });
+  const res = await fetch(buildApiUrl('/api/developer/weaknesses'), { headers: getAuthHeaders() });
   if (!res.ok) throw new Error('Failed to fetch weaknesses');
   return res.json();
 }
 
 export async function resolveWeakness(id: string): Promise<boolean> {
-  const res = await fetch('/api/developer/weaknesses/resolve', {
+  const res = await fetch(buildApiUrl('/api/developer/weaknesses/resolve'), {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify({ id }),
@@ -156,7 +153,7 @@ export async function resolveWeakness(id: string): Promise<boolean> {
 }
 
 export async function fetchExperiments(): Promise<Experiment[]> {
-  const res = await fetch('/api/developer/experiments', { headers: getAuthHeaders() });
+  const res = await fetch(buildApiUrl('/api/developer/experiments'), { headers: getAuthHeaders() });
   if (!res.ok) throw new Error('Failed to fetch experiments');
   return res.json();
 }
@@ -167,7 +164,7 @@ export async function createExperiment(params: {
   targetArea: Experiment['targetArea'];
   candidateConfig: any;
 }): Promise<Experiment> {
-  const res = await fetch('/api/developer/experiments/create', {
+  const res = await fetch(buildApiUrl('/api/developer/experiments/create'), {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(params),
@@ -178,7 +175,7 @@ export async function createExperiment(params: {
 }
 
 export async function runExperiment(experimentId: string): Promise<Experiment> {
-  const res = await fetch(`/api/developer/experiments/${experimentId}/run`, {
+  const res = await fetch(buildApiUrl(`/api/developer/experiments/${experimentId}/run`), {
     method: 'POST',
     headers: getAuthHeaders(),
   });
@@ -188,7 +185,7 @@ export async function runExperiment(experimentId: string): Promise<Experiment> {
 }
 
 export async function promoteExperimentToVersion(experimentId: string, versionTag?: string): Promise<{ success: boolean; message: string; version?: SystemVersion }> {
-  const res = await fetch(`/api/developer/experiments/${experimentId}/promote`, {
+  const res = await fetch(buildApiUrl(`/api/developer/experiments/${experimentId}/promote`), {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify({ versionTag }),
@@ -199,7 +196,7 @@ export async function promoteExperimentToVersion(experimentId: string, versionTa
 }
 
 export async function runEvaluationSuite(): Promise<any> {
-  const res = await fetch('/api/developer/evaluations/run', {
+  const res = await fetch(buildApiUrl('/api/developer/evaluations/run'), {
     method: 'POST',
     headers: getAuthHeaders(),
   });
@@ -208,19 +205,19 @@ export async function runEvaluationSuite(): Promise<any> {
 }
 
 export async function fetchAuditLogs(): Promise<SecurityAuditLog[]> {
-  const res = await fetch('/api/developer/logs', { headers: getAuthHeaders() });
+  const res = await fetch(buildApiUrl('/api/developer/logs'), { headers: getAuthHeaders() });
   if (!res.ok) throw new Error('Failed to fetch audit logs');
   return res.json();
 }
 
 export async function fetchAnonymousFeedback(): Promise<AnonymousFeedback[]> {
-  const res = await fetch('/api/developer/feedback', { headers: getAuthHeaders() });
+  const res = await fetch(buildApiUrl('/api/developer/feedback'), { headers: getAuthHeaders() });
   if (!res.ok) throw new Error('Failed to fetch feedback');
   return res.json();
 }
 
 export async function runPracticeLabCycle(): Promise<any> {
-  const res = await fetch('/api/developer/lab/cycle', {
+  const res = await fetch(buildApiUrl('/api/developer/lab/cycle'), {
     method: 'POST',
     headers: getAuthHeaders(),
   });

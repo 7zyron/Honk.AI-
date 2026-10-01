@@ -1,4 +1,5 @@
 import { ImageGenerationPayload } from '../types';
+import { ProviderManager } from '../providers/ProviderManager';
 
 export interface ImageGenerationResult {
   id: string;
@@ -35,8 +36,8 @@ function getDimensionsForAspectRatio(ratio: string, resolution: string): { width
 }
 
 /**
- * Generates an image using free, unlimited, ultra-fast Flux.1 and SDXL neural visual engines.
- * Zero rate limits, zero quota restrictions, 100% free and reliable.
+ * Generates an image using documented free-tier image APIs (Pixazo Free Tier / Google Gemini Image API).
+ * Never uses Pollinations or fake placeholder images.
  */
 export async function executeImageGeneration(
   payload: ImageGenerationPayload
@@ -51,60 +52,84 @@ export async function executeImageGeneration(
   const mode = payload.mode || (payload.inputImage ? 'edit' : 'generate');
   const { width, height } = getDimensionsForAspectRatio(aspectRatio, resolution);
 
-  const seed = Math.floor(Math.random() * 1000000000);
-  const encodedPrompt = encodeURIComponent(prompt);
+  const pixazoKey = process.env.PIXAZO_API_KEY || process.env.FREE_IMAGE_API_KEY;
 
-  // Model selection: Flux.1 Schnell / Turbo / SDXL
-  const modelName = 'Flux.1 Ultra AI';
-
-  // Primary endpoint: High-speed Flux neural engine
-  const primaryUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&model=flux&nologo=true&enhance=true`;
-  const fallbackUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&model=turbo&nologo=true`;
-
-  let finalImageUrl = primaryUrl;
-
-  try {
-    // Fetch and buffer image to return a clean, self-contained base64 data URI
-    const response = await fetch(primaryUrl, {
-      signal: AbortSignal.timeout(18000),
-      headers: {
-        'User-Agent': 'Honk-AI-Engine/2026',
-        Accept: 'image/png,image/jpeg,image/*,*/*',
-      },
-    });
-
-    if (response.ok) {
-      const arrayBuffer = await response.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const mimeType = response.headers.get('content-type') || 'image/png';
-      finalImageUrl = `data:${mimeType};base64,${buffer.toString('base64')}`;
-    } else {
-      // Try fallback turbo engine
-      const fallbackRes = await fetch(fallbackUrl, {
-        signal: AbortSignal.timeout(12000),
+  // Option 1: Pixazo Free Tier API (if PIXAZO_API_KEY is configured)
+  if (pixazoKey) {
+    try {
+      const pixazoRes = await fetch('https://gateway.pixazo.ai/sd3-5/v1/r-sd-3-5-large', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Ocp-Apim-Subscription-Key': pixazoKey,
+        },
+        body: JSON.stringify({
+          prompt,
+          width,
+          height,
+          num_images: 1,
+        }),
+        signal: AbortSignal.timeout(30000),
       });
-      if (fallbackRes.ok) {
-        const arrayBuffer = await fallbackRes.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const mimeType = fallbackRes.headers.get('content-type') || 'image/png';
-        finalImageUrl = `data:${mimeType};base64,${buffer.toString('base64')}`;
+
+      if (pixazoRes.status === 429 || pixazoRes.status === 403 || pixazoRes.status === 401) {
+        const errText = await pixazoRes.text().catch(() => '');
+        throw new Error(`Pixazo Free Tier API limit reached (${pixazoRes.status}): ${errText || 'Quota exceeded'}`);
       }
+
+      if (pixazoRes.ok) {
+        const data: any = await pixazoRes.json();
+        const imageUrl = data.image_url || data.url || data.media_url || (Array.isArray(data.images) ? data.images[0] : null);
+        if (imageUrl) {
+          return {
+            id: `img_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+            status: 'completed',
+            imageUrl,
+            prompt,
+            aspectRatio,
+            resolution,
+            model: 'Pixazo Free API (SD 3.5)',
+            mode,
+            createdAt: Date.now(),
+          };
+        }
+      }
+    } catch (err: any) {
+      if (err.message && err.message.includes('Pixazo Free Tier API limit reached')) {
+        throw err;
+      }
+      console.warn('[ImageCapability] Pixazo API failed, trying primary configured adapter:', err?.message || err);
     }
-  } catch (err) {
-    console.warn('[HonkVisualEngine] Direct buffer fetch timed out, falling back to direct stream URL:', err);
-    // Direct stream URL guarantees instant delivery without blocking
-    finalImageUrl = primaryUrl;
   }
 
-  return {
-    id: `img_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-    status: 'completed',
-    imageUrl: finalImageUrl,
-    prompt,
-    aspectRatio,
-    resolution,
-    model: modelName,
-    mode,
-    createdAt: Date.now(),
-  };
+  // Option 2: Primary configured Google Gemini Image API
+  const providerManager = ProviderManager.getInstance();
+  const geminiAdapter = providerManager.getGeminiAdapter();
+
+  try {
+    const geminiResult = await geminiAdapter.generateImage({
+      prompt,
+      aspectRatio,
+      resolution,
+      inputImage: payload.inputImage,
+    });
+
+    return {
+      id: `img_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      status: 'completed',
+      imageUrl: geminiResult.imageUrl,
+      prompt,
+      aspectRatio,
+      resolution,
+      model: geminiResult.model || 'gemini-3.1-flash-lite-image',
+      mode,
+      createdAt: Date.now(),
+    };
+  } catch (err: any) {
+    const errMsg = String(err?.message || err);
+    if (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('ResourceExhausted')) {
+      throw new Error('Rate limit reached. Please wait a moment before sending another request.');
+    }
+    throw new Error(`Image generation failed: ${errMsg}`);
+  }
 }

@@ -14,6 +14,8 @@ export interface SpeechRecognitionResultState {
   error?: string;
 }
 
+import { buildApiUrl } from '../config/api';
+
 export interface PiperTtsStatus {
   configured: boolean;
   isPiperDirect?: boolean;
@@ -96,7 +98,7 @@ export async function getPiperStatus(): Promise<PiperTtsStatus> {
   if (cachedPiperStatus) return cachedPiperStatus;
   if (statusFetchPromise) return statusFetchPromise;
 
-  statusFetchPromise = fetch('/api/tts/status')
+  statusFetchPromise = fetch(buildApiUrl('/api/tts/status'))
     .then(async (res) => {
       if (!res.ok) throw new Error('Status endpoint failed');
       const data = await res.json();
@@ -384,7 +386,7 @@ export function createStreamingVoiceSpeaker(options: {
     }
 
     try {
-      const response = await fetch('/api/tts', {
+      const response = await fetch(buildApiUrl('/api/tts'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -755,7 +757,7 @@ export async function runVoiceDiagnostics(): Promise<VoiceDiagnosticReport> {
   let latencyMs = 0;
 
   try {
-    const res = await fetch('/api/tts/diagnose');
+    const res = await fetch(buildApiUrl('/api/tts/diagnose'));
     latencyMs = Date.now() - startTime;
     if (res.ok) {
       backendData = await res.json();

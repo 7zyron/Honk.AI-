@@ -19,6 +19,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { LudoMiniGame } from './LudoMiniGame';
+import { buildApiUrl } from '../config/api';
 
 interface HonkImageGeneratorModalProps {
   isOpen: boolean;
@@ -137,7 +138,7 @@ export const HonkImageGeneratorModal: React.FC<HonkImageGeneratorModalProps> = (
     // 1. Immediately fire real Google Image API request in background
     const apiCallPromise = (async () => {
       try {
-        const res = await fetch('/api/generate-image', {
+        const res = await fetch(buildApiUrl('/api/generate-image'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -152,7 +153,7 @@ export const HonkImageGeneratorModal: React.FC<HonkImageGeneratorModalProps> = (
 
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.error || 'Failed to generate image from Google API');
+          throw new Error(errData.error || 'Failed to generate image');
         }
 
         const data = await res.json();

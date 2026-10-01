@@ -4,6 +4,7 @@ import {
   HonkMemoryItem,
   SearchFilterOptions,
 } from '../../types/search';
+import { buildApiUrl } from '../../config/api';
 
 // ============================================================================
 // 1. Client-Side LRU Prediction & Result Cache
@@ -119,7 +120,7 @@ export const searchService = {
       return { ...cached, cached: true };
     }
 
-    const res = await fetch('/api/search', {
+    const res = await fetch(buildApiUrl('/api/search'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -165,7 +166,7 @@ export const predictionService = {
     }
 
     try {
-      const res = await fetch(`/api/search/predict?q=${encodeURIComponent(cleanQuery)}`, {
+      const res = await fetch(buildApiUrl(`/api/search/predict?q=${encodeURIComponent(cleanQuery)}`), {
         signal,
       });
 
@@ -194,8 +195,8 @@ export const memoryService = {
   async getMemories(searchQuery?: string): Promise<{ isEnabled: boolean; memories: HonkMemoryItem[] }> {
     try {
       const url = searchQuery
-        ? `/api/search/memory?q=${encodeURIComponent(searchQuery)}`
-        : '/api/search/memory';
+        ? buildApiUrl(`/api/search/memory?q=${encodeURIComponent(searchQuery)}`)
+        : buildApiUrl('/api/search/memory');
 
       const res = await fetch(url);
       if (!res.ok) return { isEnabled: true, memories: [] };
@@ -211,7 +212,7 @@ export const memoryService = {
   },
 
   async toggleMemory(enabled: boolean): Promise<boolean> {
-    const res = await fetch('/api/search/memory/toggle', {
+    const res = await fetch(buildApiUrl('/api/search/memory/toggle'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ enabled }),
@@ -220,21 +221,21 @@ export const memoryService = {
   },
 
   async deleteMemory(memoryId: string): Promise<boolean> {
-    const res = await fetch(`/api/search/memory/${memoryId}`, {
+    const res = await fetch(buildApiUrl(`/api/search/memory/${memoryId}`), {
       method: 'DELETE',
     });
     return res.ok;
   },
 
   async clearMemory(): Promise<boolean> {
-    const res = await fetch('/api/search/memory/clear', {
+    const res = await fetch(buildApiUrl('/api/search/memory/clear'), {
       method: 'POST',
     });
     return res.ok;
   },
 
   async updateNotes(memoryId: string, notes: string): Promise<HonkMemoryItem | null> {
-    const res = await fetch(`/api/search/memory/${memoryId}/notes`, {
+    const res = await fetch(buildApiUrl(`/api/search/memory/${memoryId}/notes`), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ notes }),

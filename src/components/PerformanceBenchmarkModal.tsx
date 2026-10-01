@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { BENCHMARK_PROMPTS, BenchmarkPromptResult, computeAndLogTimings } from '../lib/performance';
+import { buildApiUrl } from '../config/api';
 
 interface PerformanceBenchmarkModalProps {
   isOpen: boolean;
@@ -44,7 +45,7 @@ export const PerformanceBenchmarkModal: React.FC<PerformanceBenchmarkModalProps>
 
     try {
       t1 = performance.now();
-      const response = await fetch('/api/chat', {
+      const response = await fetch(buildApiUrl('/api/chat'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

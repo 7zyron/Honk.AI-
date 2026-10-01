@@ -10,6 +10,7 @@ import {
   BenchmarkSummary,
   BenchmarkRunResult,
 } from '../types/agent';
+import { buildApiUrl } from '../config/api';
 
 export interface AgentStreamRequest {
   prompt: string;
@@ -26,19 +27,30 @@ export async function streamAgentExecution(
   onDelta: (text: string) => void,
   signal?: AbortSignal
 ): Promise<void> {
-  const response = await fetch('/api/agent/stream', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'text/event-stream',
-    },
-    body: JSON.stringify(request),
-    signal,
-  });
+  const url = buildApiUrl('/api/agent/stream');
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'text/event-stream',
+      },
+      body: JSON.stringify(request),
+      signal,
+    });
+  } catch (err: any) {
+    if (err?.name === 'AbortError') throw err;
+    throw new Error('Unable to connect to Honk Agent API. Please verify backend server or NEXT_PUBLIC_HONK_API_URL.');
+  }
+
+  if (response.status === 404) {
+    throw new Error('Honk Agent API endpoint not found (404). Please verify backend deployment or set NEXT_PUBLIC_HONK_API_URL.');
+  }
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Agent execution failed (${response.status}): ${errorText}`);
+    const errorText = await response.text().catch(() => '');
+    throw new Error(`Agent execution failed (${response.status}): ${errorText || 'Server error'}`);
   }
 
   const reader = response.body?.getReader();
@@ -84,7 +96,7 @@ export async function fetchAgentTools(): Promise<Array<{
   category: string;
   isConsequential: boolean;
 }>> {
-  const res = await fetch('/api/agent/tools');
+  const res = await fetch(buildApiUrl('/api/agent/tools'));
   if (!res.ok) throw new Error('Failed to load agent tools');
   const data = await res.json();
   return data.tools || [];
@@ -94,7 +106,7 @@ export async function fetchAgentMemories(userId: string): Promise<{
   memories: MemoryEntry[];
   preferences: MemoryPreferences;
 }> {
-  const res = await fetch(`/api/agent/memory?userId=${encodeURIComponent(userId)}`);
+  const res = await fetch(buildApiUrl(`/api/agent/memory?userId=${encodeURIComponent(userId)}`));
   if (!res.ok) throw new Error('Failed to fetch memories');
   return res.json();
 }
@@ -103,13 +115,13 @@ export async function saveAgentMemory(
   userId: string,
   entry: { key: string; value: string; type: string; layer: string }
 ): Promise<MemoryEntry> {
-  const res = await fetch('/api/agent/memory', {
+  const res = await fetch(buildApiUrl('/api/agent/memory'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId, entry }),
   });
   if (!res.ok) {
-    const err = await res.json();
+    const err = await res.json().catch(() => ({}));
     throw new Error(err.error || 'Failed to save memory');
   }
   const data = await res.json();
@@ -120,7 +132,7 @@ export async function updateAgentMemoryPreferences(
   userId: string,
   preferences: Partial<MemoryPreferences>
 ): Promise<MemoryPreferences> {
-  const res = await fetch('/api/agent/memory/preferences', {
+  const res = await fetch(buildApiUrl('/api/agent/memory/preferences'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId, preferences }),
@@ -131,14 +143,14 @@ export async function updateAgentMemoryPreferences(
 }
 
 export async function deleteAgentMemory(userId: string, memoryId: string): Promise<boolean> {
-  const res = await fetch(`/api/agent/memory/${encodeURIComponent(memoryId)}?userId=${encodeURIComponent(userId)}`, {
+  const res = await fetch(buildApiUrl(`/api/agent/memory/${encodeURIComponent(memoryId)}?userId=${encodeURIComponent(userId)}`), {
     method: 'DELETE',
   });
   return res.ok;
 }
 
 export async function clearAllAgentMemories(userId: string): Promise<boolean> {
-  const res = await fetch(`/api/agent/memory?userId=${encodeURIComponent(userId)}`, {
+  const res = await fetch(buildApiUrl(`/api/agent/memory?userId=${encodeURIComponent(userId)}`), {
     method: 'DELETE',
   });
   return res.ok;
@@ -148,7 +160,7 @@ export async function runAgentBenchmarkSuite(): Promise<{
   summary: BenchmarkSummary;
   results: BenchmarkRunResult[];
 }> {
-  const res = await fetch('/api/agent/benchmark', {
+  const res = await fetch(buildApiUrl('/api/agent/benchmark'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   });

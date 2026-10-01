@@ -1,4 +1,5 @@
 import { Message, SharedChatSummary, PublicSharedChat } from '../types';
+import { buildApiUrl } from '../config/api';
 
 const STORAGE_KEY_PREFIX = 'honk_user_shares_';
 
@@ -56,7 +57,7 @@ export async function createSharedChat(
       headers['x-user-id'] = userId;
     }
 
-    const response = await fetch('/api/shares', {
+    const response = await fetch(buildApiUrl('/api/shares'), {
       method: 'POST',
       headers,
       body: JSON.stringify({
@@ -129,7 +130,7 @@ export async function fetchSharedChat(
       headers['x-share-secret'] = ownerSecret;
     }
 
-    const res = await fetch(`/api/shares/${encodeURIComponent(shareId)}`, {
+    const res = await fetch(buildApiUrl(`/api/shares/${encodeURIComponent(shareId)}`), {
       method: 'GET',
       headers,
     });
@@ -187,7 +188,7 @@ export async function fetchUserSharedChats(userId?: string): Promise<SharedChatS
       headers['x-user-id'] = userId;
     }
 
-    const res = await fetch('/api/user/shares', {
+    const res = await fetch(buildApiUrl('/api/user/shares'), {
       method: 'GET',
       headers,
     });
@@ -238,7 +239,7 @@ export async function revokeSharedChat(
       headers['x-user-id'] = userId;
     }
 
-    const res = await fetch(`/api/shares/${encodeURIComponent(shareId)}/revoke`, {
+    const res = await fetch(buildApiUrl(`/api/shares/${encodeURIComponent(shareId)}/revoke`), {
       method: 'POST',
       headers,
       body: JSON.stringify({ ownerSecret }),

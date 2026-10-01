@@ -12,6 +12,19 @@
         "createdAt": 1790165017052,
         "updatedAt": 1790165017052
       }
+    ],
+    "ip_127.0.0.1": [
+      {
+        "userId": "ip_127.0.0.1",
+        "key": "user_greeting",
+        "value": "hi",
+        "layer": "long_term",
+        "type": "fact",
+        "confidence": 1,
+        "id": "mem_1790860001344_ievzf",
+        "createdAt": 1790860001344,
+        "updatedAt": 1790860001344
+      }
     ]
   },
   "preferences": {}

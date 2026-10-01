@@ -2,6 +2,7 @@ import { AppBuilderJob, DeploymentRecord } from '../types';
 import { defaultImporterRegistry, ImportPayload, ImportResult, HonkProject } from './imports';
 import { saveStoredProject, getStoredProjects, deleteStoredProject } from './projectStorage';
 import { applyTechnicalSeoOptimization } from './seoAnalyzer';
+import { buildApiUrl } from '../config/api';
 
 const LOCAL_STORAGE_KEY = 'honk_created_apps_cache';
 
@@ -16,7 +17,7 @@ export interface CodingModelOption {
 
 export async function fetchCodingModels(): Promise<{ models: CodingModelOption[]; defaultModel: string }> {
   try {
-    const res = await fetch('/api/app-builder/models');
+    const res = await fetch(buildApiUrl('/api/app-builder/models'));
     if (res.ok) {
       return await res.json();
     }
@@ -63,7 +64,7 @@ export async function fetchCodingModels(): Promise<{ models: CodingModelOption[]
 }
 
 export async function createApplication(prompt: string, modelId?: string): Promise<AppBuilderJob> {
-  const res = await fetch('/api/app-builder/create', {
+  const res = await fetch(buildApiUrl('/api/app-builder/create'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ prompt, modelId }),
@@ -86,7 +87,7 @@ export async function createApplication(prompt: string, modelId?: string): Promi
 }
 
 export async function refineApplication(id: string, instruction: string, modelId?: string): Promise<AppBuilderJob> {
-  const res = await fetch('/api/app-builder/refine', {
+  const res = await fetch(buildApiUrl('/api/app-builder/refine'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id, instruction, modelId }),
@@ -122,7 +123,7 @@ export async function publishApplication(payload: {
   url: string;
   liveUrl: string;
 }> {
-  const res = await fetch('/api/app-builder/publish', {
+  const res = await fetch(buildApiUrl('/api/app-builder/publish'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -142,7 +143,7 @@ export async function publishApplication(payload: {
 
 export async function fetchDeployments(): Promise<DeploymentRecord[]> {
   try {
-    const res = await fetch('/api/app-builder/deployments');
+    const res = await fetch(buildApiUrl('/api/app-builder/deployments'));
     if (res.ok) {
       const data = await res.json();
       return data.deployments || [];
@@ -155,7 +156,7 @@ export async function fetchDeployments(): Promise<DeploymentRecord[]> {
 
 export async function deleteDeploymentRecord(id: string): Promise<boolean> {
   try {
-    const res = await fetch(`/api/app-builder/deployments/${id}`, {
+    const res = await fetch(buildApiUrl(`/api/app-builder/deployments/${id}`), {
       method: 'DELETE',
     });
     return res.ok;
@@ -181,7 +182,7 @@ export async function repairProjectWithAi(
   changesSummary: string[];
   resolvedPreviewHtml?: string;
 }> {
-  const res = await fetch('/api/app-builder/repair', {
+  const res = await fetch(buildApiUrl('/api/app-builder/repair'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -225,7 +226,7 @@ export function optimizeProjectSeo(
 
 export async function fetchApplication(id: string): Promise<AppBuilderJob | null> {
   try {
-    const res = await fetch(`/api/app-builder/jobs/${id}`);
+    const res = await fetch(buildApiUrl(`/api/app-builder/jobs/${id}`));
     if (!res.ok) {
       // Check local cache
       const cached = getCachedJobs().find((j) => j.id === id);
@@ -242,7 +243,7 @@ export async function fetchApplication(id: string): Promise<AppBuilderJob | null
 
 export async function fetchRecentApplications(): Promise<AppBuilderJob[]> {
   try {
-    const res = await fetch('/api/app-builder/jobs');
+    const res = await fetch(buildApiUrl('/api/app-builder/jobs'));
     if (res.ok) {
       const serverJobs: AppBuilderJob[] = await res.json();
       if (Array.isArray(serverJobs) && serverJobs.length > 0) {
@@ -265,7 +266,7 @@ export async function fetchRecentApplications(): Promise<AppBuilderJob[]> {
 
 export async function deleteApplication(id: string): Promise<void> {
   try {
-    await fetch(`/api/app-builder/jobs/${id}`, { method: 'DELETE' });
+    await fetch(buildApiUrl(`/api/app-builder/jobs/${id}`), { method: 'DELETE' });
   } catch (e) {
     console.warn('Error calling delete API', e);
   }

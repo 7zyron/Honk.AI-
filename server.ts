@@ -1725,19 +1725,26 @@ async function startServer() {
     });
   }
 
-  const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Honk AI Platform Server running on http://0.0.0.0:${PORT}`);
-    // Pre-warm AI provider client on startup for instant zero-cold-start streaming
-    try {
-      ProviderManager.getInstance();
-    } catch (e) {
-      console.warn('[HONK] Pre-warm provider initialization deferred:', e);
-    }
-  });
+  if (!process.env.VERCEL) {
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Honk AI Platform Server running on http://0.0.0.0:${PORT}`);
+      // Pre-warm AI provider client on startup for instant zero-cold-start streaming
+      try {
+        ProviderManager.getInstance();
+      } catch (e) {
+        console.warn('[HONK] Pre-warm provider initialization deferred:', e);
+      }
+    });
 
-  // Keep HTTP connections warm and prevent socket teardown
-  server.keepAliveTimeout = 65000;
-  server.headersTimeout = 66000;
+    // Keep HTTP connections warm and prevent socket teardown
+    server.keepAliveTimeout = 65000;
+    server.headersTimeout = 66000;
+  }
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export { app };
+export default app;

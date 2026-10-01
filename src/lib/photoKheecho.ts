@@ -1,4 +1,5 @@
 import { PhotoKheechoResult } from '../types';
+import { buildApiUrl } from '../config/api';
 
 /**
  * Compresses an image file or data URI on the client before uploading to reduce latency.
@@ -95,7 +96,7 @@ export async function analyzePhoto(params: {
   language?: string;
   history?: Array<{ role: 'user' | 'assistant'; content: string }>;
 }): Promise<PhotoKheechoResult> {
-  const res = await fetch('/api/photo-kheecho/analyze', {
+  const res = await fetch(buildApiUrl('/api/photo-kheecho/analyze'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -133,7 +134,7 @@ export async function followUpPhoto(params: {
   language?: string;
   history: Array<{ role: 'user' | 'assistant'; content: string }>;
 }): Promise<{ reply: string; suggestedQuestions: string[] }> {
-  const res = await fetch('/api/photo-kheecho/follow-up', {
+  const res = await fetch(buildApiUrl('/api/photo-kheecho/follow-up'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

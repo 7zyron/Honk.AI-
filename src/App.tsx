@@ -44,6 +44,7 @@ import { DeveloperImprovementCenter } from './components/developer/DeveloperImpr
 import { HonkShieldDashboard } from './components/shield/HonkShieldDashboard';
 import { DeviceCenterModal } from './components/agent/DeviceCenterModal';
 import { HonkImageGeneratorModal } from './components/HonkImageGeneratorModal';
+import { buildApiUrl } from './config/api';
 import { verifyDeveloperSession } from './services/developerService';
 import { streamAgentExecution } from './services/agentService';
 import { AgentStage, AgentPlan, VerificationReport, AgentMetrics } from './types/agent';
@@ -309,7 +310,7 @@ export default function App() {
   // Sync settings to server preferences if user is authenticated or guest
   useEffect(() => {
     if (currentUser?.id) {
-      fetch('/api/user/preferences', {
+      fetch(buildApiUrl('/api/user/preferences'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -329,7 +330,7 @@ export default function App() {
   // Fetch usage quota from server for current user
   const fetchUsage = useCallback(async () => {
     try {
-      const res = await fetch('/api/quota', {
+      const res = await fetch(buildApiUrl('/api/quota'), {
         headers: {
           'x-user-id': currentUser.id,
         },
@@ -557,7 +558,7 @@ export default function App() {
     abortControllerRef.current = abortController;
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch(buildApiUrl('/api/chat'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -586,11 +587,52 @@ export default function App() {
       // Handle HTTP 429 Daily Limit Reached
       if (response.status === 429) {
         const errorData = await response.json().catch(() => ({}));
-        const message = errorData.error || 'Daily limit reached — try again tomorrow';
+        const message = errorData.error || 'Daily query limit reached (100/100). Resets at midnight.';
 
         setErrorBanner(message);
         setUsage((prev) => (prev ? { ...prev, remaining: 0, used: 100 } : null));
 
+        setConversations((prev) =>
+          prev.map((c) => {
+            if (c.id !== convoId) return c;
+            return {
+              ...c,
+              messages: c.messages.map((m) =>
+                m.id === assistantMsgId
+                  ? { ...m, status: 'error', error: message, content: `⚠️ **${message}**` }
+                  : m
+              ),
+            };
+          })
+        );
+        setIsGenerating(false);
+        return;
+      }
+
+      if (response.status === 404) {
+        const message = 'Honk Chat API endpoint not found (404). Please verify backend server or NEXT_PUBLIC_HONK_API_URL.';
+        setErrorBanner(message);
+        setConversations((prev) =>
+          prev.map((c) => {
+            if (c.id !== convoId) return c;
+            return {
+              ...c,
+              messages: c.messages.map((m) =>
+                m.id === assistantMsgId
+                  ? { ...m, status: 'error', error: message, content: `⚠️ **${message}**` }
+                  : m
+              ),
+            };
+          })
+        );
+        setIsGenerating(false);
+        return;
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        const errorData = await response.json().catch(() => ({}));
+        const message = errorData.error || 'Authentication failed. Please verify API authorization credentials.';
+        setErrorBanner(message);
         setConversations((prev) =>
           prev.map((c) => {
             if (c.id !== convoId) return c;
@@ -846,7 +888,7 @@ export default function App() {
     abortControllerRef.current = abortController;
 
     try {
-      const response = await fetch('/api/generate-image', {
+      const response = await fetch(buildApiUrl('/api/generate-image'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -862,20 +904,10 @@ export default function App() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        let rawError = errorData.error;
-        if (
-          rawError &&
-          (rawError.includes('Gemini') ||
-            rawError.includes('Google') ||
-            rawError.includes('API_KEY') ||
-            rawError.includes('billing'))
-        ) {
-          rawError = undefined;
-        }
         const message =
-          rawError ||
+          errorData.error ||
           (response.status === 429
-            ? 'Image generation service is temporarily busy. Please try again in a moment.'
+            ? 'Rate limit reached. Please wait a moment before sending another request.'
             : 'Image generation failed. Please try again.');
 
         setErrorBanner(message);
@@ -1130,7 +1162,7 @@ export default function App() {
 
     try {
       const historyToSend = [...currentConversation.messages, userMessage];
-      const response = await fetch('/api/chat', {
+      const response = await fetch(buildApiUrl('/api/chat'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1626,7 +1658,7 @@ export default function App() {
   // Reset Quota endpoint call
   const handleResetUsage = async () => {
     try {
-      const res = await fetch('/api/quota/reset', {
+      const res = await fetch(buildApiUrl('/api/quota/reset'), {
         method: 'POST',
         headers: { 'x-user-id': currentUser.id },
       });
@@ -1643,7 +1675,7 @@ export default function App() {
   // Simulate limit reached (100 messages)
   const handleSimulateLimit = async (count: number) => {
     try {
-      const res = await fetch('/api/quota/set-count', {
+      const res = await fetch(buildApiUrl('/api/quota/set-count'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
