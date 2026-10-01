@@ -296,17 +296,29 @@ app.post('/api/user/preferences', (req: Request, res: Response) => {
 
 // Compatibility Usage Endpoint for Frontend
 app.get('/api/quota', (req: Request, res: Response) => {
-  const { userId } = extractAuthIdentity(req);
-  const check = checkCapabilityRateLimit(userId, Capability.CHAT);
+  try {
+    console.log('[HONK] /api/quota entered');
+    const { userId } = extractAuthIdentity(req);
+    const check = checkCapabilityRateLimit(userId, Capability.CHAT);
+    console.log('[HONK] quota checked', { remaining: check.remaining });
 
-  res.json({
-    userId,
-    limit: check.limit,
-    used: check.limit - check.remaining,
-    remaining: check.remaining,
-    resetAt: check.resetAt,
-    isLimitReached: check.remaining <= 0,
-  });
+    res.json({
+      success: true,
+      userId,
+      limit: check.limit,
+      used: check.limit - check.remaining,
+      remaining: check.remaining,
+      resetAt: check.resetAt,
+      isLimitReached: check.remaining <= 0,
+    });
+  } catch (err: any) {
+    console.error('[HONK CRASH] /api/quota failed:', err?.name, err?.message, err?.stack);
+    res.status(500).json({
+      success: false,
+      error: 'Quota service error',
+      message: err?.message || 'Failed to fetch quota',
+    });
+  }
 });
 
 // Reset endpoint for testing rate limits
@@ -1222,35 +1234,75 @@ app.post('/api/device/verify', handleVerifyStateRequest);
 // 12. General-Purpose AI Agent Architecture API Routes
 // -------------------------------------------------------------
 app.post('/api/agent/stream', async (req: Request, res: Response) => {
-  const { prompt, messages, isHeavyTask, userId, projectId, confirmedActions } = req.body;
-  if (!prompt || typeof prompt !== 'string') {
-    res.status(400).json({ error: 'User prompt is required' });
-    return;
-  }
+  console.log('[HONK] agent/stream entered');
+  try {
+    console.log('[HONK] environment check passed');
+    const { prompt, messages, isHeavyTask, userId, projectId, confirmedActions } = req.body || {};
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache, no-transform');
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no');
-  res.flushHeaders?.();
-
-  const orchestrator = AgentOrchestrator.getInstance();
-  await orchestrator.executeAgentStream(
-    {
-      userPrompt: prompt,
-      messages: Array.isArray(messages) ? messages : [],
-      isHeavyTask: Boolean(isHeavyTask),
-      userId: userId || 'guest_user',
-      projectId,
-      confirmedActions: Array.isArray(confirmedActions) ? confirmedActions : [],
-    },
-    (event) => {
-      res.write(`data: ${JSON.stringify(event)}\n\n`);
+    if (!prompt || typeof prompt !== 'string') {
+      res.status(400).json({ error: 'User prompt is required' });
+      return;
     }
-  );
 
-  res.write('data: [DONE]\n\n');
-  res.end();
+    console.log('[HONK] request parsed');
+
+    const authIdentity = extractAuthIdentity(req);
+    const effectiveUserId = userId || authIdentity.userId;
+    const quotaCheck = checkCapabilityRateLimit(effectiveUserId, Capability.CHAT);
+    console.log('[HONK] quota checked', { remaining: quotaCheck.remaining });
+
+    if (!quotaCheck.allowed) {
+      res.status(429).json({
+        error: 'Daily rate limit reached. Please try again tomorrow.',
+        remaining: 0,
+        resetAt: quotaCheck.resetAt,
+      });
+      return;
+    }
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders?.();
+
+    console.log('[HONK] provider initialized');
+    console.log('[HONK] AI request started');
+
+    const orchestrator = AgentOrchestrator.getInstance();
+    await orchestrator.executeAgentStream(
+      {
+        userPrompt: prompt,
+        messages: Array.isArray(messages) ? messages : [],
+        isHeavyTask: Boolean(isHeavyTask),
+        userId: effectiveUserId,
+        projectId,
+        confirmedActions: Array.isArray(confirmedActions) ? confirmedActions : [],
+      },
+      (event) => {
+        try {
+          res.write(`data: ${JSON.stringify(event)}\n\n`);
+        } catch (e) {
+          console.error('[HONK STREAM WRITE ERROR]', e);
+        }
+      }
+    );
+
+    res.write('data: [DONE]\n\n');
+    res.end();
+  } catch (err: any) {
+    console.error('[HONK CRASH] agent/stream failed:', err?.name, err?.message, err?.stack);
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: 'AI provider unavailable or agent execution failed',
+        details: err?.message || 'Internal Server Error',
+      });
+    } else {
+      res.write(`data: ${JSON.stringify({ type: 'error', data: { error: err?.message || 'Stream failed' } })}\n\n`);
+      res.write('data: [DONE]\n\n');
+      res.end();
+    }
+  }
 });
 
 app.get('/api/agent/tools', (_req: Request, res: Response) => {

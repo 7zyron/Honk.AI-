@@ -81,10 +81,12 @@ export class HonkShieldManager {
   private activeFailedCounter: Map<string, number> = new Map();
 
   private constructor() {
-    this.dataDir = path.join(process.cwd(), '.honk_data', 'shield');
-    if (!fs.existsSync(this.dataDir)) {
-      fs.mkdirSync(this.dataDir, { recursive: true });
-    }
+    this.dataDir = process.env.VERCEL ? path.join('/tmp', '.honk_data', 'shield') : path.join(process.cwd(), '.honk_data', 'shield');
+    try {
+      if (!fs.existsSync(this.dataDir)) {
+        fs.mkdirSync(this.dataDir, { recursive: true });
+      }
+    } catch {}
 
     this.settingsFile = path.join(this.dataDir, 'settings.json');
     this.eventsFile = path.join(this.dataDir, 'events.json');

@@ -38,7 +38,7 @@ export interface Experiment {
   completedAt?: number;
 }
 
-const DEV_DATA_DIR = path.join(process.cwd(), '.honk_data', 'developer');
+const DEV_DATA_DIR = process.env.VERCEL ? path.join('/tmp', '.honk_data', 'developer') : path.join(process.cwd(), '.honk_data', 'developer');
 const EXPERIMENTS_FILE = path.join(DEV_DATA_DIR, 'experiments.json');
 
 export class ExperimentManager {
@@ -58,9 +58,11 @@ export class ExperimentManager {
   }
 
   private ensureDirs(): void {
-    if (!fs.existsSync(DEV_DATA_DIR)) {
-      fs.mkdirSync(DEV_DATA_DIR, { recursive: true });
-    }
+    try {
+      if (!fs.existsSync(DEV_DATA_DIR)) {
+        fs.mkdirSync(DEV_DATA_DIR, { recursive: true });
+      }
+    } catch {}
   }
 
   private loadExperiments(): void {

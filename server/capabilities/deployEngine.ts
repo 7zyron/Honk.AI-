@@ -49,7 +49,7 @@ export interface BuildValidationResult {
   wasFixed: boolean;
 }
 
-const DEPLOYMENTS_FILE = path.join(process.cwd(), '.honk_data', 'deployments.json');
+const DEPLOYMENTS_FILE = process.env.VERCEL ? path.join('/tmp', '.honk_data', 'deployments.json') : path.join(process.cwd(), '.honk_data', 'deployments.json');
 const deployments = new Map<string, DeploymentRecord>();
 
 // Ensure data folder exists & load existing deployments

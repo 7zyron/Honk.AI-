@@ -16,13 +16,13 @@ export class MemoryManager {
   private storageFilePath: string;
 
   private constructor() {
-    const dataDir = path.join(process.cwd(), '.honk_data');
-    if (!fs.existsSync(dataDir)) {
-      try {
+    const dataDir = process.env.VERCEL ? path.join('/tmp', '.honk_data') : path.join(process.cwd(), '.honk_data');
+    try {
+      if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
-      } catch {
-        // ignore in readonly environments
       }
+    } catch {
+      // ignore in readonly environments
     }
     this.storageFilePath = path.join(dataDir, 'agent_memories.json');
     this.loadFromDisk();

@@ -49,7 +49,7 @@ export interface DeploymentConfig {
   };
 }
 
-const DEV_DATA_DIR = path.join(process.cwd(), '.honk_data', 'developer');
+const DEV_DATA_DIR = process.env.VERCEL ? path.join('/tmp', '.honk_data', 'developer') : path.join(process.cwd(), '.honk_data', 'developer');
 const VERSIONS_FILE = path.join(DEV_DATA_DIR, 'versions.json');
 const CONFIG_FILE = path.join(DEV_DATA_DIR, 'deployment_config.json');
 
@@ -139,9 +139,11 @@ export class VersionManager {
   }
 
   private ensureDirs(): void {
-    if (!fs.existsSync(DEV_DATA_DIR)) {
-      fs.mkdirSync(DEV_DATA_DIR, { recursive: true });
-    }
+    try {
+      if (!fs.existsSync(DEV_DATA_DIR)) {
+        fs.mkdirSync(DEV_DATA_DIR, { recursive: true });
+      }
+    } catch {}
   }
 
   private loadData(): void {

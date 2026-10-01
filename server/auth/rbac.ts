@@ -30,7 +30,7 @@ export interface SecurityAuditLog {
   reason?: string;
 }
 
-const DATA_DIR = path.join(process.cwd(), '.honk_data');
+const DATA_DIR = process.env.VERCEL ? path.join('/tmp', '.honk_data') : path.join(process.cwd(), '.honk_data');
 const DEV_DATA_DIR = path.join(DATA_DIR, 'developer');
 const AUDIT_LOG_FILE = path.join(DEV_DATA_DIR, 'audit_logs.json');
 const DEV_SESSIONS_FILE = path.join(DEV_DATA_DIR, 'developer_sessions.json');
@@ -38,11 +38,15 @@ const DEV_CONFIG_FILE = path.join(DEV_DATA_DIR, 'developer_config.json');
 
 // Ensure isolated developer directories exist
 function ensureDeveloperDirs() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(DEV_DATA_DIR)) {
-    fs.mkdirSync(DEV_DATA_DIR, { recursive: true });
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(DEV_DATA_DIR)) {
+      fs.mkdirSync(DEV_DATA_DIR, { recursive: true });
+    }
+  } catch (err) {
+    console.warn('[RBAC] Could not create developer data directories:', err);
   }
 }
 
