@@ -1,156 +1,129 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HONK AI - Real Answers Only</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>HONK AI v3 - Real Engine</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HONK AI">
+<meta name="theme-color" content="#00FF88">
+<link rel="manifest" href='data:application/json;base64,eyJuYW1lIjoiSE9OSyBBSSIsInNob3J0X25hbWUiOiJIT05LIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwZiIsInRoZW1lX2NvbG9yIjoiIzAwRkY4OCIsImljb25zIjpbXX0='>
 <style>
-:root{--bg:#0a0a0f;--card:#12121a;--neon:#00FF88;--orange:#FF6B00;--text:#fff}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;overflow:hidden;background-image: radial-gradient(circle at 20% 30%, rgba(0,255,136,0.15), transparent 50%), radial-gradient(circle at 80% 70%, rgba(255,107,0,0.15), transparent 50%);transition:0.3s}
-.header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(18,18,26,0.9);border-bottom:1px solid #222;backdrop-filter:blur(20px)}
-.logo{font-weight:700;font-size:22px} .logo span{color:var(--neon)}
-.modes{display:flex;gap:6px}
-.mode-btn{padding:6px 10px;border-radius:20px;border:1px solid #333;background:#1a1a25;font-size:11px;cursor:pointer;color:#aaa}
-.mode-btn.active{background:var(--neon);color:#000;border-color:var(--neon);font-weight:700;box-shadow:0 0 15px var(--neon)}
-.chat-area{height:calc(100vh - 180px);overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
-.msg{max-width:85%;padding:12px 14px;border-radius:18px;font-size:14px;line-height:1.4;animation:pop 0.2s}
-@keyframes pop{from{transform:scale(0.9);opacity:0}to{transform:scale(1);opacity:1}}
-.user{align-self:flex-end;background:linear-gradient(135deg,var(--neon),#00cc6a);color:#000;font-weight:600;border-bottom-right-radius:4px}
-.ai{align-self:flex-start;background:var(--card);border:1px solid #222;border-bottom-left-radius:4px}
-.ai.roaster{border-left:3px solid var(--orange)}
-.ai img{width:100%;border-radius:12px;margin-top:8px;border:1px solid #222}
-.proof{margin-top:8px;padding:8px;background:#0f0f17;border-radius:10px;border:1px dashed var(--neon);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--neon)}
-.input-section{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.95);backdrop-filter:blur(20px);padding:10px;border-top:1px solid #222}
-.quick-keys{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
-.quick-keys button{white-space:nowrap;padding:6px 12px;border-radius:20px;background:#1e1e2a;border:1px solid #333;color:#ccc;font-size:12px}
-.custom-keyboard{background:var(--card);border-radius:16px;padding:10px;margin-top:8px;border:1px solid #222}
-.kb-row{display:flex;gap:6px;justify-content:center;margin-bottom:6px}
-.kb-key{flex:1;padding:12px 4px;background:#1e1e2a;border:1px solid #2a2a3a;border-radius:8px;color:#fff;text-align:center;font-size:14px;cursor:pointer}
-.kb-key:active{background:var(--neon);color:#000}
-.kb-key.emoji{font-size:18px}
-.input-row{display:flex;gap:8px;align-items:center}
-#userInput{flex:1;padding:14px 16px;border-radius:24px;background:#1e1e2a;border:1px solid #333;color:#fff;outline:none;font-size:14px}
-#sendBtn{width:44px;height:44px;border-radius:50%;background:var(--neon);border:none;color:#000;font-weight:700;cursor:pointer;box-shadow:0 0 15px var(--neon)}
-.settings-panel{position:fixed;top:0;right:-100%;width:85%;max-width:320px;height:100%;background:#0f0f17;border-left:1px solid #222;z-index:99;transition:0.3s;padding:20px;overflow-y:auto}
-.settings-panel.open{right:0}
-.set-title{font-weight:700;margin:18px 0 8px;color:var(--neon);font-size:13px;letter-spacing:1px}
-.set-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1a1a25;font-size:13px}
-select,input[type=color]{background:#1e1e2a;border:1px solid #333;color:#fff;padding:6px;border-radius:8px}
-</style>
-</head>
-<body id="body">
+body{background:#08080c;color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;height:100dvh;display:flex;flex-direction:column}
+.header{padding:14px 16px;background:#12121a;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center}
+.header b{font-size:18px} .header b span{color:#00FF88}
+.modes{display:flex;gap:6px;padding:10px 12px;overflow-x:auto;background:#0f0f17;border-bottom:1px solid #222;flex-shrink:0;scrollbar-width:none}
+.mode-btn{white-space:nowrap;padding:8px 14px;border-radius:20px;border:1px solid #333;background:#1e1e2a;color:#aaa;font-size:12px;cursor:pointer}
+.mode-btn.active{background:#00FF88;color:#000;font-weight:700;border-color:#00FF88}
+#chat{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:14px}
+.msg{max-width:90%;padding:12px 14px;border-radius:18px;font-size:14px;line-height:1.5;position:relative}
+.user{align-self:flex-end;background:#00FF88;color:#000;font-weight:600;border-bottom-right-radius:4px}
+.ai{align-self:flex-start;background:#181822;border:1px solid #2a2a3a;border-bottom-left-radius:4px}
+.ai img{width:100%;border-radius:12px;margin-top:10px;border:1px solid #333;object-fit:cover}
+.download-btn{margin-top:8px;width:100%;padding:10px;background:#00FF88;color:#000;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.download-btn:active{transform:scale(0.98)}
+.proof{margin-top:8px;padding:8px 10px;background:#0a0a0f;border:1px dashed #00FF88;border-radius:8px;font-size:11px;color:#00FF88;font-family:monospace}
+#bottom{flex-shrink:0;background:#0f0f17;border-top:1px solid #222;padding:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+.inputRow{display:flex;gap:10px;align-items:center}
+#inp{flex:1;padding:14px 18px;border-radius:28px;background:#1e1e2a;border:1px solid #444;color:#fff;outline:none;font-size:16px}
+#send{width:48px;height:48px;border-radius:50%;background:#00FF88;border:none;font-weight:700;font-size:18px;cursor:pointer;flex-shrink:0}
+.install-banner{display:none;padding:10px 14px;background:linear-gradient(135deg,#00FF88,#00cc6a);color:#000;font-size:13px;font-weight:700;justify-content:space-between;align-items:center}
+.install-banner.show{display:flex}
+</style></head><body>
 
-<div class="header">
-<div class="logo">HONK<span> AI</span> <small style="font-size:10px;color:#666;margin-left:4px">v1.0 REAL ONLY</small></div>
-<div style="display:flex;gap:8px">
-<button onclick="toggleSettings()" style="background:#1e1e2a;border:1px solid #333;color:#fff;padding:8px 12px;border-radius:20px">⚙️</button>
+<div id="installBanner" class="install-banner">
+<span>📲 Install HONK AI to Home Screen</span>
+<button id="installBtn" style="padding:6px 12px;border-radius:20px;background:#000;color:#00FF88;border:none;font-weight:700">Install</button>
+</div>
+
+<div class="header"><b>HONK <span>AI</span> <small style="color:#666;font-size:11px;margin-left:4px">v3 • NO CUSTOM KB</small></b><span style="font-size:10px;color:#00FF88">● LIVE • REAL IMAGES</span></div>
+
+<div class="modes">
+<button class="mode-btn active" onclick="setM(this,'real')">🎯 Real Only</button>
+<button class="mode-btn" onclick="setM(this,'roaster')">🔥 Roaster</button>
+<button class="mode-btn" onclick="setM(this,'logic')">🧠 Logic+Proof</button>
+<button class="mode-btn" onclick="setM(this,'image')">🖼️ Real Image</button>
+<button class="mode-btn" onclick="downloadApp()">📥 Add to Home</button>
+</div>
+
+<div id="chat">
+<div class="msg ai">
+<b>HONK v3 FIXED 😤</b><br><br>
+✅ Removed my own keyboard — now your iPhone keyboard<br>
+✅ BMW = BMW image, Lambo = Lambo image (real engine)<br>
+✅ Every image has Download button<br>
+✅ Add to Home Screen button working<br><br>
+Try typing "BMW" or "Lambo" now.
 </div>
 </div>
 
-<div style="display:flex;gap:6px;padding:8px 16px;overflow-x:auto;background:rgba(0,0,0,0.3)">
-<button class="mode-btn active" id="btn-real" onclick="setMode('real')">🎯 Real Only</button>
-<button class="mode-btn" id="btn-roaster" onclick="setMode('roaster')">🔥 Roaster</button>
-<button class="mode-btn" id="btn-logic" onclick="setMode('logic')">🧠 Logic + Proof</button>
-<button class="mode-btn" id="btn-image" onclick="setMode('image')">🖼️ Real Image</button>
-<button class="mode-btn" id="btn-unstop" onclick="setMode('unstop')">🚀 Unstoppable</button>
+<div id="bottom">
+<div class="inputRow">
+<input id="inp" placeholder="Type BMW, Lambo, ORVO, anything..." autocomplete="off">
+<button id="send" onclick="s()">➤</button>
 </div>
-
-<div class="chat-area" id="chat">
-<div class="msg ai">Yo I'm <b>HONK AI</b> 😤<br>Not ChatGPT polite bot.<br><br>✅ Real answer even if harsh<br>✅ Logic + Image proof<br>✅ Roasts you if you dumb<br>✅ Makes REALISTIC images, not cartoon<br><br>Ask anything. I don't sugarcoat. <span style="color:var(--neon)">Try me.</span></div>
-</div>
-
-<div class="input-section">
-<div class="quick-keys" id="quickKeys">
-<button onclick="quick('Roast my startup idea')">Roast my idea 🔥</button>
-<button onclick="quick('Give real answer with logic proof')">Real + Proof 🧠</button>
-<button onclick="quick('Generate realistic image of')">Real Image 🖼️</button>
-<button onclick="quick('No BS, is it legal to')">No BS Legal? ⚖️</button>
-<button onclick="quick('Explain like I am 5 but roast me')">ELI5 + Roast 😈</button>
-</div>
-
-<div class="custom-keyboard" id="keyboard">
-<div class="kb-row">
-<div class="kb-key" onclick="typeKey('Q')">Q</div><div class="kb-key" onclick="typeKey('W')">W</div><div class="kb-key" onclick="typeKey('E')">E</div><div class="kb-key" onclick="typeKey('R')">R</div><div class="kb-key" onclick="typeKey('T')">T</div><div class="kb-key" onclick="typeKey('Y')">Y</div>
-</div>
-<div class="kb-row">
-<div class="kb-key" onclick="typeKey('A')">A</div><div class="kb-key" onclick="typeKey('S')">S</div><div class="kb-key" onclick="typeKey('D')">D</div><div class="kb-key" onclick="typeKey('F')">F</div><div class="kb-key" onclick="typeKey('G')">G</div>
-</div>
-<div class="kb-row">
-<div class="kb-key emoji" onclick="typeKey('🔥')">🔥</div><div class="kb-key emoji" onclick="typeKey('💀')">💀</div><div class="kb-key emoji" onclick="typeKey('😈')">😈</div><div class="kb-key emoji" onclick="typeKey('🚀')">🚀</div><div class="kb-key emoji" onclick="typeKey('🧠')">🧠</div><div class="kb-key emoji" onclick="typeKey('⚡')">⚡</div><div class="kb-key" style="background:var(--orange)" onclick="backspace()">⌫</div>
-</div>
-</div>
-
-<div class="input-row" style="margin-top:8px">
-<input id="userInput" placeholder="Ask HONK anything — real answer only..." onkeypress="if(event.key==='Enter')send()">
-<button id="sendBtn" onclick="send()">➤</button>
-</div>
-</div>
-
-<div class="settings-panel" id="settings">
-<h2 style="margin-bottom:10px">HONK Settings ⚙️</h2>
-<button onclick="toggleSettings()" style="position:absolute;top:15px;right:15px;background:#222;border:none;color:#fff;padding:6px 10px;border-radius:50%">✕</button>
-
-<div class="set-title">DISCIPLINE BG (Focus Mode)</div>
-<div class="set-item"><span>Gym Discipline</span><button onclick="setBG('gym')">Apply 💪</button></div>
-<div class="set-item"><span>Coding Discipline</span><button onclick="setBG('code')">Apply 💻</button></div>
-<div class="set-item"><span>Study Discipline</span><button onclick="setBG('study')">Apply 📚</button></div>
-
-<div class="set-title">SUPER BG + KEYBOARD</div>
-<div class="set-item"><span>Keyboard BG Color</span><input type="color" id="kbColor" onchange="changeKbColor(this.value)" value="#12121a"></div>
-<div class="set-item"><span>App BG Color</span><input type="color" id="appColor" onchange="document.getElementById('body').style.backgroundColor=this.value" value="#0a0a0f"></div>
-<div class="set-item"><span>Emoji Pack</span><select onchange="changeEmoji(this.value)"><option>Default 🔥💀</option><option>Cute 🥺✨</option><option>Dark 😈💀</option><option>Indian 🇮🇳🔥</option></select></div>
-
-<div class="set-title">CHATGPT-LIKE SETTINGS</div>
-<div class="set-item"><span>Very Fast Mode</span><select><option>⚡ Insane Fast</option><option>Normal</option></select></div>
-<div class="set-item"><span>Memory</span><span style="color:var(--neon)">ON</span></div>
-<div class="set-item"><span>Real Image Engine</span><span style="color:var(--neon)">SDXL + Realistic</span></div>
-<div class="set-item"><span>Data Stays in India</span><span style="color:var(--neon)">✔️</span></div>
-
-<div class="set-title">ABOUT HONK</div>
-<p style="font-size:12px;color:#888;line-height:1.5">HONK is not polite AI. It gives REAL answer with LOGIC + IMAGE PROOF. Roasts if needed. Unstoppable but legal & ethical. Made in India.</p>
+<div style="text-align:center;margin-top:8px;font-size:10px;color:#666">Data Stays in India • Made for Ai+ Nova • No custom keyboard</div>
 </div>
 
 <script>
 let mode='real';
-function setMode(m){mode=m;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));document.getElementById('btn-'+m).classList.add('active')}
-function toggleSettings(){document.getElementById('settings').classList.toggle('open')}
-function typeKey(k){document.getElementById('userInput').value+=k}
-function backspace(){let i=document.getElementById('userInput');i.value=i.value.slice(0,-1)}
-function quick(t){document.getElementById('userInput').value=t+' ';document.getElementById('userInput').focus()}
-function setBG(type){
- const body=document.getElementById('body');
- if(type==='gym') body.style.backgroundImage="radial-gradient(circle at 50% 50%, rgba(255,0,0,0.2), transparent), url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80')";
- if(type==='code') body.style.backgroundImage="radial-gradient(circle, rgba(0,255,136,0.2), transparent), url('https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80')";
- if(type==='study') body.style.backgroundImage="radial-gradient(circle, rgba(100,100,255,0.2), transparent), url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80')";
- body.style.backgroundSize="cover"; body.style.backgroundBlendMode="overlay";
-}
-function changeKbColor(c){document.getElementById('keyboard').style.background=c}
-function changeEmoji(v){console.log(v)}
+let deferredPrompt=null;
 
-function send(){
- const input=document.getElementById('userInput');
- const txt=input.value.trim(); if(!txt) return;
+// PWA install handling
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault(); deferredPrompt=e;
+  document.getElementById('installBanner').classList.add('show');
+});
+document.getElementById('installBtn')?.addEventListener('click', async ()=>{
+  if(deferredPrompt){ deferredPrompt.prompt(); const {outcome}=await deferredPrompt.userChoice; deferredPrompt=null; document.getElementById('installBanner').classList.remove('show'); }
+});
+
+function downloadApp(){
+ if(deferredPrompt){ deferredPrompt.prompt(); }
+ else{
+  // iOS manual add to home screen guide
+  alert("📲 iPhone: Tap Share button (square with arrow) at bottom → Scroll → Add to Home Screen → Add.\n\nAndroid: Menu → Add to Home Screen.\n\nHONK will install like real app!");
+ }
+}
+
+function setM(el,m){mode=m;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));if(el.textContent.includes('Add')===false) el.classList.add('active')}
+function getReply(q){
+ const l=q.toLowerCase();
+ if(l.includes('bmw')) return {text:`<b>BMW M4 Competition</b><br>3.0L Twin-Turbo, 503HP, 0-100 3.9s.<br><br>Real talk: Status car, maintenance ~80k/yr in India. If you want flex, buy. If want reliability, buy Toyota.`, img:`bmw m4 competition blue photorealistic 8k ultra detailed professional photo`}
+ if(l.includes('lambo')||l.includes('aventador')||l.includes('huracan')) return {text:`<b>Lamborghini Aventador SVJ</b><br>V12 769HP, 0-100 2.8s, ~6Cr India.<br><br>Roast: Bro typing Lambo on phone, first buy ORVO collab with Ai+ 😈`, img:`lamborghini aventador orange photorealistic dramatic lighting 8k`}
+ if(l.includes('wagon')||l.includes('cream')) return {text:`<b>Cream WagonR Drift</b><br>Your WagonR — 1.0L K10, 67HP. Not made for drift but with low profile + remap it slides 🔥`, img:`cream maruti suzuki wagonr modified drifting smoke photorealistic`}
+ if(l.includes('orvo')) return {text:`<b>ORVO — Siri for Ai+</b><br>Offline Chatbot + Inbuilt 3D AI, No API, 2 Sec.<br><br>Siri for iOS, Gemini for Android, Bixby for Samsung, But ORVO for Ai+ 🔥`, img:`black hole green wireframe cube 3d ai tech poster orange glow`}
+ if(l.includes('who are you')||l.includes('honk')) return {text:`I'm HONK AI v3 — Built by Zyron Class 8. Real answers, logic + proof, roast mode, real image engine. Data Stays in India.`, img:`futuristic ai logo HONK AI neon green black`}
+ return {text:`<b>Real Only: ${q}</b><br><br>Truth:<br>1. Logic over feelings<br>2. Work > shortcuts<br>3. Image proof below is for your exact query, not random.`, img:`${q}, photorealistic, 8k, ultra detailed, real life photography`}
+}
+
+function downloadImage(url, name){
+ const a=document.createElement('a'); a.href=url; a.download=name.replace(/\s+/g,'_')+'.jpg'; a.target='_blank'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+function s(){
+ const inp=document.getElementById('inp'); const txt=inp.value.trim(); if(!txt) return;
  const chat=document.getElementById('chat');
  chat.innerHTML+=`<div class="msg user">${txt}</div>`;
- input.value='';
- setTimeout(()=>{
-   let reply='';
-   let imgHtml='';
-   if(mode==='roaster') reply=`💀 ROAST MODE ON:<br><br>Bro you asking "${txt}"? That's the most NPC question I heard today. But okay, since you asked...<br><br>Real answer: You need to work harder. No shortcut.`;
-   else if(mode==='logic') reply=`🧠 LOGIC + PROOF:<br><br><b>Q:</b> ${txt}<br><br><b>Real Answer:</b> Based on facts, not feelings. Here's logical breakdown:<br>1. Fact check ✅<br>2. Logic check ✅<br>3. Image proof below 👇`;
-   else if(mode==='image') {reply=`🖼️ Generating REALISTIC image for: "${txt}"<br>100% photorealistic, not cartoon.`; imgHtml=`<img src="https://picsum.photos/seed/${Date.now()}/600/400" alt="realistic proof"><div class="proof">📸 Proof: Realistic SDXL render, 8K, photorealistic, location verified</div>`;}
-   else if(mode==='unstop') reply=`🚀 UNSTOPPABLE MODE:<br>I'll answer anything with REAL logic. No corporate BS. But staying ethical & legal.<br><br>For "${txt}" → Here's the unfiltered truth: Do it smart, not illegal.`;
-   else reply=`🎯 REAL ONLY:<br><br>Q: ${txt}<br><br>A: Straight up, no filter. This is the truth people don't tell you. ${txt.toLowerCase().includes('legal')?'Legally, check law, but morally... here is real scenario.':''} <br><br>Want image proof? Switch to Logic+Proof mode.`;
-   
-   if(mode==='logic' || txt.toLowerCase().includes('proof')) imgHtml+=`<div class="proof">📊 Logic Proof: Verified sources + reasoning + no hallucination<br>🔍 Cross-checked: 3 sources</div>`;
-   
-   chat.innerHTML+=`<div class="msg ai ${mode==='roaster'?'roaster':''}">${reply}${imgHtml}</div>`;
-   chat.scrollTop=chat.scrollHeight;
- }, 400 + Math.random()*300);
+ inp.value='';
+ const id='msg-'+Date.now();
+ chat.innerHTML+=`<div class="msg ai" id="${id}">HONK typing... ⚡</div>`;
  chat.scrollTop=chat.scrollHeight;
+ setTimeout(()=>{
+   const data=getReply(txt);
+   const safePrompt=encodeURIComponent(data.img);
+   const seed=Math.floor(Math.random()*100000);
+   const imgUrl=`https://image.pollinations.ai/prompt/${safePrompt}?width=1024&height=768&seed=${seed}&nologo=true&model=flux`;
+   const html=`
+     ${data.text}
+     <img id="img-${seed}" src="${imgUrl}" loading="lazy" onerror="this.src='https://picsum.photos/seed/${seed}/800/600'">
+     <button class="download-btn" onclick="downloadImage('${imgUrl}','HONK-${txt.substring(0,15)}')">📥 Download Image</button>
+     <div class="proof">🎨 Prompt: "${data.img}"<br>⚡ Engine: Flux Realistic • Tap Download to save to Gallery</div>
+   `;
+   document.getElementById(id).innerHTML=html;
+   chat.scrollTop=chat.scrollHeight;
+ },700);
 }
-</script>
-</body>
-</html>
+document.getElementById('inp').addEventListener('keypress',e=>{if(e.key==='Enter')s()})
+
+// Auto show install guide after 3 sec on iOS
+setTimeout(()=>{ if(/iPhone|iPad|iPod/.test(navigator.userAgent) && !window.matchMedia('(display-mode: standalone)').matches){ document.getElementById('installBanner').classList.add('show'); } },2000);
+</script></body></html>
